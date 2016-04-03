@@ -3,7 +3,6 @@ using namespace std;
 
 int main(){
 	Sudoku s;
-	s.readIn();
-	s.solve();
+	s.giveQuestion();
 	return 0;
 }

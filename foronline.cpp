@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <algorithm>
+#include <ctime>
 using namespace std;
 
 Sudoku::Sudoku(){clear();}
@@ -196,3 +197,162 @@ int Sudoku::recur(int pos){
 	}
 	else{return 0;}
 }
+
+void Sudoku::changeNum(int a , int b){
+	if((a < 1 || 9 < a) || (b < 1 || 9 < b)){
+		puts("error : changeNum");
+		exit(1);
+	}
+
+	for(int i = 0 ; i < 81 ; i++){
+		if(Q[i/9][i%9] == a){Q[i/9][i%9] = b;}
+		else if(Q[i/9][i%9] == b){Q[i/9][i%9] = a;}
+		else{continue;}
+	}
+}
+
+void Sudoku::changeRow(int a , int b){
+	if((a < 0 || 2 < a) || (b < 0 || 2 < b)){
+		puts("error : changeRow");
+		exit(1);
+	}
+
+	int buf[9];
+
+	copy(Q[a*3] , Q[a*3] + 9 , buf);
+	copy(Q[b*3] , Q[b*3] + 9 , Q[a*3]);
+	copy(buf , buf + 9 , Q[b*3]);
+
+	copy(Q[a*3+1] , Q[a*3+1] + 9 , buf);
+	copy(Q[b*3+1] , Q[b*3+1] + 9 , Q[a*3+1]);
+	copy(buf , buf + 9 , Q[b*3+1]);
+
+	copy(Q[a*3+2] , Q[a*3+2] + 9 , buf);
+	copy(Q[b*3+2] , Q[b*3+2] + 9 , Q[a*3+2]);
+	copy(buf , buf + 9 , Q[b*3+2]);
+}
+
+void Sudoku::changeCol(int a , int b){
+	if((a < 0 || 2 < a) || (b < 0 || 2 < b)){
+		puts("error : changeCol");
+		exit(1);
+	}
+
+	int buf[9][3];
+
+	for(int i = 0 ; i < 9 ; i++){copy(Q[i] + a * 3 , Q[i] + a * 3 + 3 , buf[i]);}
+	for(int i = 0 ; i < 9 ; i++){copy(Q[i] + b * 3 , Q[i] + b * 3 + 3 , Q[i] + a * 3);}
+	for(int i = 0 ; i < 9 ; i++){copy(buf[i] , buf[i] + 3 , Q[i] + b * 3);}
+}
+
+void Sudoku::rotate(int n){
+	if(n < 0 || 100 < n){
+		puts("error : rotate");
+		exit(1);
+	}
+
+	int buf[9][9];
+
+	switch(n%4){
+		case 0:
+			break;
+		case 1:
+			for(int i = 0 ; i < 81 ; i++){buf[i%9][8-i/9] = Q[i/9][i%9];}
+			copy(buf[0] , buf[0] + 81 , Q[0]);
+			break;
+		case 2:
+			for(int i = 0 ; i < 81 ; i++){*(buf[0] + 80 - i) = Q[i/9][i%9];}
+			copy(buf[0] , buf[0] + 81 , Q[0]);
+			break;
+		case 3:
+			for(int i = 0 ; i < 81 ; i++){buf[8-i%9][i/9] = Q[i/9][i%9];}
+			copy(buf[0] , buf[0] + 81 , Q[0]);
+			break;
+		default:
+			puts("error : rotate");
+			exit(1);
+	}
+}
+
+void Sudoku::flip(int n){
+	int buf[9][9];
+
+	copy(Q[0] , Q[0] + 81 , buf[0]);
+
+	switch(n){
+		case 0:
+			for(int i = 0 ; i < 9 ; i++){
+				for(int j = 0 ; j < 9 ; j++){
+					Q[i][j] = buf[i][8-j];
+				}
+			}
+			break;
+		case 1:
+			for(int i = 0 ; i < 9 ; i++){copy(buf[8-i] , buf[8-i] + 9 , Q[i]);}
+			break;
+		default:
+			puts("error : flip");
+			exit(1);
+	}
+}
+
+void Sudoku::transform(){
+	srand(time(NULL));
+
+	for(int i = 0 ; i < 7 ; i++){
+		changeNum(rand()%9 + 1 , rand()%9 + 1);
+		changeRow(rand()%3 , rand()%3);
+		changeCol(rand()%3 , rand()%3);
+		rotate(rand()%101);
+		flip(rand()%2);
+	}
+
+	print();
+}
+
+void Sudoku::giveQuestion(){
+	int exam[9][9] = 
+	{{0,0,0,0,5,0,0,9,0},
+	{4,0,0,0,0,0,0,0,2},
+	{0,0,6,7,0,0,0,0,0},
+	{2,0,0,0,0,0,0,0,0},
+	{9,5,0,0,0,0,0,1,0},
+	{0,0,0,6,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,3},
+	{0,8,0,0,0,0,7,0,6},
+	{0,0,0,0,1,3,0,0,0}};
+
+	copy(exam[0] , exam[0] + 81 , Q[0]);
+	print();
+}
+
+void Sudoku::solve(){
+	int prespace = 81;
+
+	if(!solutionCheck()){puts("0");}
+	else if(solutionCheck() > 64){puts("2");}
+	else{
+		initMap();
+		while(1){
+			modifyQ();
+			if(spaceCheck() == prespace){break;}
+			else{prespace = spaceCheck();}
+		}
+		switch(recur(0)){
+			case 0:
+				puts("0");
+				break;
+			case 1:
+				puts("1");
+				print();
+				break;
+			case 2:
+				puts("2");
+				break;
+			default:
+				puts("error : recur");
+				exit(1);
+		}
+	}
+}
+
