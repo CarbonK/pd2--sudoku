@@ -145,19 +145,23 @@ int Sudoku::spaceCheck(){
 }
 
 int Sudoku::recur(int pos){
-	int count1 = 0 , count2 = 0;
+	int count1 = 0 , count2 = 0 , i , j;
 	int Qs[9][9];
 	bool Ms[9][9][9];
 
 	copy(Q[0] , Q[0] + 81 , Qs[0]);
 	copy(Map[0][0] , Map[0][0] + 729 , Ms[0][0]);
 
-	if(pos == 81){return 1;}
+	if(pos == 81){
+		print();
+		puts("");
+		return 1;
+	}
 	else if(Q[pos/9][pos%9] != 0){
 		return recur(pos + 1);
 	}
 	else{
-		for(int i = 0 ; i < 9 ; i++){
+		for(i = 0 ; i < 9 ; i++){
 			if(!Map[i][pos/9][pos%9]){
 				Q[pos/9][pos%9] = i + 1;
 				modifyMap(i , pos / 9 , pos % 9);
@@ -194,6 +198,4 @@ int Sudoku::recur(int pos){
 				return 2;
 		}
 	}
-
-	return 1;
 }
