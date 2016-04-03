@@ -23,5 +23,6 @@ class Sudoku{
 		bool solutionCheck();
 		int spaceCheck();
 		int recur(int);
+		void dug(int);
 };
 #endif
